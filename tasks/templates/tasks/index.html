@@ -1,0 +1,80 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Doclist</title>
+    <link  rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <script src="{% static 'javascript/bootstrap.min.js' %}"></script>
+    <script src="{% static 'javascript/htmx.min.js' %}"></script>
+</head>
+<body>
+
+    <div class="container mt-5">
+    <header> <h1>Nous sommes à l'accueil, bonne arrivée</h1></header>
+    <div class="row">
+    <div class="col-4">
+    <nav id="collections" class="list-group" role="tablist">
+        {% for collection in collections %}
+            {% include 'tasks/collections.html' with collections=collections %}
+        {% endfor %}
+    </nav>    
+    
+    <section>
+    <form method="POST" action="" class="d-flex gap-2 mt-2">
+        {% csrf_token %}        
+        <input type="text" 
+        name="collection-name" 
+        placeholder="Collections..."
+        class="form-control">
+        <button type="submit" hx-post="{% url 'add-collection' %}"
+                hx-target="#collections"
+                hx-swap="beforeend"
+                class="btn btn-success"
+        >Ajouter</button>
+    </form>
+    </div>
+    <div class="col-8">
+    </section>
+
+    <main>
+    <form method="POST" action="" class="d-flex gap-3">
+        {% csrf_token %}
+        <input type="text" 
+        name="task-description" 
+        placeholder="Tâche"
+        class="form-control">
+        <button type="submit" hx-post="{% url 'add-task' %}"
+                hx-target="#tasks"
+                hx-vals='js:{collection : getCollectionFromUrl()}'
+                hx-swap="beforeend"
+                class="btn btn-success">
+                Ajouter</button>
+
+    </form>
+
+    <section id="tasks-container">
+        {% include 'tasks/tasks.html' with tasks=tasks collection=collection %}
+    </section>   
+    </div>
+    </div>
+
+    </main>
+
+    </div>
+
+    <script>
+        document.body.addEventListener("htmx:responseError", function(evt){
+            alert(evt.detail.xhr.responseText);
+        })
+        function getCollectionFromUrl(){
+            let url= new URL(window.location.href);
+            let searchParams=url.searchParams;
+            return searchParams.get("collection")
+        }
+
+    </script>
+
+</body>
+</html>
